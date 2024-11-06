@@ -1,79 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-
-    <head>
-        <meta charset="UTF-8">
-        <title>Manual WebRTC Signaling</title>
-    </head>
-
-    <body>
-        <h2>Manual WebRTC Signaling</h2>
-        <textarea id="localOffer" placeholder="Local Offer"></textarea><br>
-        <button onclick="createOffer()">Create Offer</button><br>
-        <textarea id="remoteOffer" placeholder="Paste Remote Offer Here"></textarea><br>
-        <button onclick="startConnection()">Start Connection</button><br>
-        <video id="localVideo" autoplay muted></video>
-        <video id="remoteVideo" autoplay></video>
-
-    </body>
-    <script>
-        // webrtc.js
-        let localPeerConnection;
-        let remotePeerConnection;
-        const localVideo = document.getElementById('localVideo');
-        const remoteVideo = document.getElementById('remoteVideo');
-
-        // 获取媒体流并显示
-        navigator.mediaDevices
-            .getUserMedia({ video: true, audio: true })
-            .then((stream) => {
-                localVideo.srcObject = stream;
-                localPeerConnection = new RTCPeerConnection();
-                localPeerConnection.addStream(stream);
-            })
-            .catch((error) => {
-                alert(error);
-                console.error('MediaStream error: ', error);
-            });
-
-        function createOffer () {
-            localPeerConnection
-                .createOffer()
-                .then((offer) => {
-                    localPeerConnection.setLocalDescription(offer);
-                    document.getElementById('localOffer').value = JSON.stringify(offer);
-                })
-                .catch((error) => {
-                    alert(error);
-                    console.error('Offer creation error: ', error);
-                });
-        }
-
-        function startConnection () {
-            const remoteOffer = JSON.parse(document.getElementById('remoteOffer').value);
-            remotePeerConnection = new RTCPeerConnection();
-            remotePeerConnection.ontrack = (event) => {
-                remoteVideo.srcObject = event.streams[0];
-            };
-            remotePeerConnection
-                .setRemoteDescription(new RTCSessionDescription(remoteOffer))
-                .then(() => {
-                    return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                })
-                .then((stream) => {
-                    remotePeerConnection.addStream(stream);
-                    return remotePeerConnection.createAnswer();
-                })
-                .then((answer) => {
-                    remotePeerConnection.setLocalDescription(answer);
-                    document.getElementById('localOffer').value = JSON.stringify(answer);
-                })
-                .catch((error) => {
-                    alert(error);
-                    console.error('Connection start error: ', error);
-                });
-        }
-
-    </script>
-
+<!doctype html>
+<html>
+<head>
+  <title>WebRTC: Simple RTCDataChannel sample</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="main.css" type="text/css" media="all">
+  <script src="../adapter.js"></script>
+  <script src="main.js"></script>
+</head>
+<body>
+  <h1>MDN - WebRTC: Simple RTCDataChannel sample</h1>
+  <p>This sample is an admittedly contrived example of how to use an <code>RTCDataChannel</code> to
+  exchange data between two objects on the same page. See the
+  <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Simple_RTCDataChannel_sample">
+  corresponding article</a> for details on how it works.</p>
+  
+  <div class="controlbox">
+    <button id="connectButton" name="connectButton" class="buttonleft">
+      Connect
+    </button>
+    <button id="disconnectButton" name="disconnectButton" class="buttonright" disabled>
+      Disconnect
+    </button>
+  </div>
+  
+  <div class="messagebox">
+    <label for="message">Enter a message:
+      <input type="text" name="message" id="message" placeholder="Message text" 
+              inputmode="latin" size=60 maxlength=120 disabled>
+    </label>
+    <button id="sendButton" name="sendButton" class="buttonright" disabled>
+      Send
+    </button>
+  </div>
+  <div class="messagebox" id="receivebox">
+    <p>Messages received:</p>
+  </div>
+</body>
 </html>
